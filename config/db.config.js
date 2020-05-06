@@ -1,9 +1,9 @@
 const { Sequelize } = require('sequelize');
 
 
-const sequelize = new Sequelize('savvy-golf', 'postgres', process.env.POSTGRES_AWS_PW, {
+const sequelize = new Sequelize('thegolfguild', 'postgres', process.env.POSTGRES_AWS_PW, {
 
-    // host: 'savvy-golf.cxex4gbmtouy.us-east-2.rds.amazonaws.com',
+    // host: 'thegolfguild.cxex4gbmtouy.us-east-2.rds.amazonaws.com',
     host: 'localhost',
     dialect: 'postgres',
 

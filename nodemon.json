@@ -1,0 +1,6 @@
+{
+    "env": {
+        "POSTGRES_AWS_PW": "10071995Aj!",
+        "JWT_KEY": "SUP3Rs44vyG0LF"
+    }
+}

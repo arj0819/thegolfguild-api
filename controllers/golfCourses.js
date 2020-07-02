@@ -7,7 +7,7 @@ exports.golfCourses_findAll = (apiRequest, apiResponse) => {
         include: [
             {
                 model: Tee,
-                order: [['scratchRating', 'DESC']],
+                order: [['slope', 'DESC']],
                 separate: true
             }
         ],

@@ -102,6 +102,12 @@ exports.rounds_create = async (apiRequest, apiResponse) => {
         scratchRating: tee.scratchRating,
         primaryColor: tee.primaryColor || null,
         secondaryColor: tee.secondaryColor || null,
+        outYards: tee.outYards,
+        inYards: tee.inYards,
+        outPar: tee.outPar,
+        inPar: tee.inPar,
+        totalYards: tee.totalYards,
+        totalPar: tee.totalPar,
     })
 
     //empty array for containing the returned promises from creating all new RoundHoles

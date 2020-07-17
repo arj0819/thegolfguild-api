@@ -41,8 +41,6 @@ exports.tees_create_hole = async (apiRequest, apiResponse) => {
         return
     }
 
-
-    console.log('here')
     const hole = await Hole.create({
         teeId: apiRequest.params.teeId,
         number: apiRequest.body.number,

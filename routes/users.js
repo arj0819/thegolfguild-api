@@ -26,6 +26,9 @@ router.get('/:userId/active-rounds/:roundId', checkAuth, UserController.users_fi
 //Add Stroke to Round Hole By User
 router.post('/:userId/round-holes/:roundHoleId/round-strokes', checkAuth, UserController.users_create_roundStroke);
 
+//Update Stroke from Round Hole By User
+router.post('/:userId/round-holes/:roundHoleId/round-strokes/:roundStrokeId', checkAuth, UserController.users_update_roundStroke);
+
 //Delete Stroke from Round Hole By User
 router.delete('/:userId/round-holes/:roundHoleId/round-strokes/:roundStrokeId', checkAuth, UserController.users_delete_roundStroke);
 

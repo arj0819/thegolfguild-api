@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
 //TEST THE DATABASE
+console.log('Attempting to connect to ->', db.config.host);
 db.authenticate()
     .then(() => console.log('Database connected successfully'))
     .catch((dbError) => console.log(`Database connection failed: ${dbError}`))

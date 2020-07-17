@@ -359,11 +359,84 @@ exports.users_create_roundStroke = async (apiRequest, apiResponse) => {
             apiResponse.status(500).send(error.message);
         })
 
+    let previousStrokeTerrainResultType = null;
+    let terrainIntendedTypeId = null;
+    if (roundHole.RoundStrokes.length > 0) {
+        if (roundHole.RoundStrokes[roundHole.RoundStrokes.length - 1] !== null) {
+            previousStrokeTerrainResultType = roundHole.RoundStrokes[roundHole.RoundStrokes.length - 1].terrainResultTypeId;
+        }
+    } else {
+        roundHole.par > 3 ? terrainIntendedTypeId = 1 : terrainIntendedTypeId = 5;
+    }
+
+    // Ignore the add new RoundStroke request if the previous stroke terrain type result was in the Hole (ID=7)
+    if (previousStrokeTerrainResultType === 7) {
+        apiResponse.status(405).send();
+        return;
+    }
+
     //create a new RoundStroke with the provided roundHoleId, userId
     RoundStroke.create({
         roundHoleId: apiRequest.params.roundHoleId,
         userId: apiRequest.params.userId || null,
         number: roundHole.RoundStrokes.length + 1,
+        strokeTypeId: roundHole.RoundStrokes.length === 0 ? 8 : null,
+        terrainStartTypeId: roundHole.RoundStrokes.length === 0 ? 13 : previousStrokeTerrainResultType,
+        terrainIntendedTypeId: terrainIntendedTypeId,
+        lieAngleTypeId: roundHole.RoundStrokes.length === 0 ? 2 : null,
+        liePitchTypeId: roundHole.RoundStrokes.length === 0 ? 2 : null,
+        lieConditionTypeId: roundHole.RoundStrokes.length === 0 ? 0 : null,
+    })
+        .then(roundStroke => {
+            console.log(roundStroke);
+            apiResponse.status(200).send(roundStroke);
+        })
+        .catch(error => {
+            console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+}
+
+exports.users_update_roundStroke = async (apiRequest, apiResponse) => {
+
+    const roundStroke = await RoundStroke.findOne({
+        where: {
+            roundStrokeId: apiRequest.params.roundStrokeId,
+            userId: apiRequest.params.userId
+        },
+    })
+        .catch(error => {
+            console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+    //update the RoundStroke with the provided information
+    RoundStroke.update({
+        strokeTypeId: apiRequest.body.strokeTypeId !== typeof undefined ? apiRequest.body.strokeTypeId : roundStroke.strokeTypeId,
+        terrainStartTypeId: apiRequest.body.terrainStartTypeId !== typeof undefined ? apiRequest.body.terrainStartTypeId : roundStroke.terrainStartTypeId,
+        terrainIntendedTypeId: apiRequest.body.terrainIntendedTypeId !== typeof undefined ? apiRequest.body.terrainIntendedTypeId : roundStroke.terrainIntendedTypeId,
+        terrainResultTypeId: apiRequest.body.terrainResultTypeId !== typeof undefined ? apiRequest.body.terrainResultTypeId : roundStroke.terrainResultTypeId,
+        curveIntendedTypeId: apiRequest.body.curveIntendedTypeId !== typeof undefined ? apiRequest.body.curveIntendedTypeId : roundStroke.curveIntendedTypeId,
+        curveResultTypeId: apiRequest.body.curveResultTypeId !== typeof undefined ? apiRequest.body.curveResultTypeId : roundStroke.curveResultTypeId,
+        distanceResultTypeId: apiRequest.body.distanceResultTypeId !== typeof undefined ? apiRequest.body.distanceResultTypeId : roundStroke.distanceResultTypeId,
+        lateralResultTypeId: apiRequest.body.lateralResultTypeId !== typeof undefined ? apiRequest.body.lateralResultTypeId : roundStroke.lateralResultTypeId,
+        lieAngleTypeId: apiRequest.body.lieAngleTypeId !== typeof undefined ? apiRequest.body.lieAngleTypeId : roundStroke.lieAngleTypeId,
+        liePitchTypeId: apiRequest.body.liePitchTypeId !== typeof undefined ? apiRequest.body.liePitchTypeId : roundStroke.liePitchTypeId,
+        lieConditionTypeId: apiRequest.body.lieConditionTypeId !== typeof undefined ? apiRequest.body.lieConditionTypeId : roundStroke.lieConditionTypeId,
+        breakLateralReadTypeId: apiRequest.body.breakLateralReadTypeId !== typeof undefined ? apiRequest.body.breakLateralReadTypeId : roundStroke.breakLateralReadTypeId,
+        breakLateralResultTypeId: apiRequest.body.breakLateralResultTypeId !== typeof undefined ? apiRequest.body.breakLateralResultTypeId : roundStroke.breakLateralResultTypeId,
+        breakVerticalReadTypeId: apiRequest.body.breakVerticalReadTypeId !== typeof undefined ? apiRequest.body.breakVerticalReadTypeId : roundStroke.breakVerticalReadTypeId,
+        breakVerticalResultTypeId: apiRequest.body.breakVerticalResultTypeId !== typeof undefined ? apiRequest.body.breakVerticalResultTypeId : roundStroke.breakVerticalResultTypeId,
+        windDirectionTypeId: apiRequest.body.windDirectionTypeId !== typeof undefined ? apiRequest.body.windDirectionTypeId : roundStroke.windDirectionTypeId,
+        windStrengthTypeId: apiRequest.body.windStrengthTypeId !== typeof undefined ? apiRequest.body.windStrengthTypeId : roundStroke.windStrengthTypeId,
+        strokeSatisfactionTypeId: apiRequest.body.strokeSatisfactionTypeId !== typeof undefined ? apiRequest.body.strokeSatisfactionTypeId : roundStroke.strokeSatisfactionTypeId,
+        clubId: apiRequest.body.clubId ? apiRequest.body.clubId !== typeof undefined : roundStroke.clubId,
+        userId: apiRequest.body.userId ? apiRequest.body.userId !== typeof undefined : roundStroke.userId,
+    },{
+        where: {
+            roundStrokeId: roundStroke.roundStrokeId
+        }
     })
         .then(roundStroke => {
             console.log(roundStroke);

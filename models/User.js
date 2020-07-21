@@ -22,6 +22,9 @@ const User = db.define('User', {
     confirmed: {
         type: Sequelize.BOOLEAN
     },
+    golfBag: {
+        type: Sequelize.ARRAY(Sequelize.DataTypes.SMALLINT)
+    }
 })
 
 module.exports = User;

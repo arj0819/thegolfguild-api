@@ -53,6 +53,7 @@ exports.users_signup = async (apiRequest, apiResponse) => {
                     password: hash,
                     firstName: apiRequest.body.firstName,
                     lastName: apiRequest.body.lastName,
+                    golfBag: [39],
                     confirmed: false,
                 })
                     .then(user => {
@@ -360,19 +361,31 @@ exports.users_create_roundStroke = async (apiRequest, apiResponse) => {
         })
 
     let previousStrokeTerrainResultType = null;
-    let terrainIntendedTypeId = null;
+    let lieQualityTypeId = null;
+    let intendedShapeTypeId = null;
+    let breakReadQualityTypeId = null;
     if (roundHole.RoundStrokes.length > 0) {
         if (roundHole.RoundStrokes[roundHole.RoundStrokes.length - 1] !== null) {
             previousStrokeTerrainResultType = roundHole.RoundStrokes[roundHole.RoundStrokes.length - 1].terrainResultTypeId;
         }
     } else {
-        roundHole.par > 3 ? terrainIntendedTypeId = 1 : terrainIntendedTypeId = 5;
+        // Default lie quality of Good (2) if we know we are on the teebox
+        lieQualityTypeId = 2;
     }
 
-    // Ignore the add new RoundStroke request if the previous stroke terrain type result was in the Hole (ID=7)
-    if (previousStrokeTerrainResultType === 7) {
+    // Ignore the add new RoundStroke request if the previous stroke terrain type result was in the Hole (ID=8)
+    if (previousStrokeTerrainResultType === 8) {
         apiResponse.status(405).send();
         return;
+    }
+    // Default lie quality of Good (2) if the previousTerrainResultType was on the Green (6)
+    // Default break read quality of Good (2) if the previousTerrainResultType was on the Green (6)
+    // Default intended shape of Straight (2) if the previousTerrainResultType was NOT on the Green (6)
+    if (previousStrokeTerrainResultType === 6) {
+        lieQualityTypeId = 2;
+        breakReadQualityTypeId = 2;
+    } else {
+        intendedShapeTypeId = 2;
     }
 
     //create a new RoundStroke with the provided roundHoleId, userId
@@ -380,12 +393,12 @@ exports.users_create_roundStroke = async (apiRequest, apiResponse) => {
         roundHoleId: apiRequest.params.roundHoleId,
         userId: apiRequest.params.userId || null,
         number: roundHole.RoundStrokes.length + 1,
-        strokeTypeId: roundHole.RoundStrokes.length === 0 ? 8 : null,
-        terrainStartTypeId: roundHole.RoundStrokes.length === 0 ? 13 : previousStrokeTerrainResultType,
-        terrainIntendedTypeId: terrainIntendedTypeId,
-        lieAngleTypeId: roundHole.RoundStrokes.length === 0 ? 2 : null,
-        liePitchTypeId: roundHole.RoundStrokes.length === 0 ? 2 : null,
-        lieConditionTypeId: roundHole.RoundStrokes.length === 0 ? 0 : null,
+        strokeTypeId: roundHole.RoundStrokes.length === 0 ? 2 : null,
+        terrainStartTypeId: roundHole.RoundStrokes.length === 0 ? 14 : previousStrokeTerrainResultType,
+        lieQualityTypeId: lieQualityTypeId,
+        intendedShapeTypeId: intendedShapeTypeId,
+        breakReadQualityTypeId: breakReadQualityTypeId,
+        satisfactionTypeId: 3,
     })
         .then(roundStroke => {
             console.log(roundStroke);
@@ -415,24 +428,17 @@ exports.users_update_roundStroke = async (apiRequest, apiResponse) => {
     RoundStroke.update({
         strokeTypeId: apiRequest.body.strokeTypeId !== typeof undefined ? apiRequest.body.strokeTypeId : roundStroke.strokeTypeId,
         terrainStartTypeId: apiRequest.body.terrainStartTypeId !== typeof undefined ? apiRequest.body.terrainStartTypeId : roundStroke.terrainStartTypeId,
-        terrainIntendedTypeId: apiRequest.body.terrainIntendedTypeId !== typeof undefined ? apiRequest.body.terrainIntendedTypeId : roundStroke.terrainIntendedTypeId,
         terrainResultTypeId: apiRequest.body.terrainResultTypeId !== typeof undefined ? apiRequest.body.terrainResultTypeId : roundStroke.terrainResultTypeId,
-        curveIntendedTypeId: apiRequest.body.curveIntendedTypeId !== typeof undefined ? apiRequest.body.curveIntendedTypeId : roundStroke.curveIntendedTypeId,
-        curveResultTypeId: apiRequest.body.curveResultTypeId !== typeof undefined ? apiRequest.body.curveResultTypeId : roundStroke.curveResultTypeId,
-        distanceResultTypeId: apiRequest.body.distanceResultTypeId !== typeof undefined ? apiRequest.body.distanceResultTypeId : roundStroke.distanceResultTypeId,
-        lateralResultTypeId: apiRequest.body.lateralResultTypeId !== typeof undefined ? apiRequest.body.lateralResultTypeId : roundStroke.lateralResultTypeId,
-        lieAngleTypeId: apiRequest.body.lieAngleTypeId !== typeof undefined ? apiRequest.body.lieAngleTypeId : roundStroke.lieAngleTypeId,
-        liePitchTypeId: apiRequest.body.liePitchTypeId !== typeof undefined ? apiRequest.body.liePitchTypeId : roundStroke.liePitchTypeId,
-        lieConditionTypeId: apiRequest.body.lieConditionTypeId !== typeof undefined ? apiRequest.body.lieConditionTypeId : roundStroke.lieConditionTypeId,
-        breakLateralReadTypeId: apiRequest.body.breakLateralReadTypeId !== typeof undefined ? apiRequest.body.breakLateralReadTypeId : roundStroke.breakLateralReadTypeId,
-        breakLateralResultTypeId: apiRequest.body.breakLateralResultTypeId !== typeof undefined ? apiRequest.body.breakLateralResultTypeId : roundStroke.breakLateralResultTypeId,
-        breakVerticalReadTypeId: apiRequest.body.breakVerticalReadTypeId !== typeof undefined ? apiRequest.body.breakVerticalReadTypeId : roundStroke.breakVerticalReadTypeId,
-        breakVerticalResultTypeId: apiRequest.body.breakVerticalResultTypeId !== typeof undefined ? apiRequest.body.breakVerticalResultTypeId : roundStroke.breakVerticalResultTypeId,
-        windDirectionTypeId: apiRequest.body.windDirectionTypeId !== typeof undefined ? apiRequest.body.windDirectionTypeId : roundStroke.windDirectionTypeId,
-        windStrengthTypeId: apiRequest.body.windStrengthTypeId !== typeof undefined ? apiRequest.body.windStrengthTypeId : roundStroke.windStrengthTypeId,
-        strokeSatisfactionTypeId: apiRequest.body.strokeSatisfactionTypeId !== typeof undefined ? apiRequest.body.strokeSatisfactionTypeId : roundStroke.strokeSatisfactionTypeId,
-        clubId: apiRequest.body.clubId ? apiRequest.body.clubId !== typeof undefined : roundStroke.clubId,
-        userId: apiRequest.body.userId ? apiRequest.body.userId !== typeof undefined : roundStroke.userId,
+        shapeAchievedTypeId: apiRequest.body.shapeAchievedTypeId !== typeof undefined ? apiRequest.body.shapeAchievedTypeId : roundStroke.shapeAchievedTypeId,
+        intendedShapeTypeId: apiRequest.body.intendedShapeTypeId !== typeof undefined ? apiRequest.body.intendedShapeTypeId : roundStroke.intendedShapeTypeId,
+        accuracyTypeId: apiRequest.body.accuracyTypeId !== typeof undefined ? apiRequest.body.accuracyTypeId : roundStroke.accuracyTypeId,
+        lieQualityTypeId: apiRequest.body.lieQualityTypeId !== typeof undefined ? apiRequest.body.lieQualityTypeId : roundStroke.lieQualityTypeId,
+        contactQualityTypeId: apiRequest.body.contactQualityTypeId !== typeof undefined ? apiRequest.body.contactQualityTypeId : roundStroke.contactQualityTypeId,
+        breakReadQualityTypeId: apiRequest.body.breakReadQualityTypeId !== typeof undefined ? apiRequest.body.breakReadQualityTypeId : roundStroke.breakReadQualityTypeId,
+        windTypeId: apiRequest.body.windTypeId !== typeof undefined ? apiRequest.body.windTypeId : roundStroke.windTypeId,
+        satisfactionTypeId: apiRequest.body.satisfactionTypeId !== typeof undefined ? apiRequest.body.satisfactionTypeId : roundStroke.satisfactionTypeId,
+        clubId: apiRequest.body.clubId !== typeof undefined ? apiRequest.body.clubId : roundStroke.clubId,
+        userId: apiRequest.params.userId !== typeof undefined ? apiRequest.params.userId : roundStroke.userId,
     },{
         where: {
             roundStrokeId: roundStroke.roundStrokeId
@@ -444,6 +450,56 @@ exports.users_update_roundStroke = async (apiRequest, apiResponse) => {
         })
         .catch(error => {
             console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+}
+
+exports.users_findOne_golfBag = async (apiRequest, apiResponse) => {
+
+    const user = await User.findOne({
+        where: {
+            userId: apiRequest.params.userId
+        },
+    })
+        .then(user => {
+            console.log(user.golfBag);
+            jwt.verify
+            apiResponse.status(200).json(user.golfBag);
+        })
+        .catch(error => {
+            console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+}
+
+exports.users_update_golfBag = async (apiRequest, apiResponse) => {
+    
+    const user = await User.findOne({
+        where: {
+            userId: apiRequest.params.userId
+        },
+    })
+        .catch(error => {
+            console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+    //update the User's golfBag with the provided golfBag
+    User.update({
+        golfBag: apiRequest.body.golfBag
+    },{
+        where: {
+            userId: user.userId
+        }
+    })
+        .then(roundStroke => {
+            console.log('golf bag updated sucessfully');
+            apiResponse.status(200).send(roundStroke);
+        })
+        .catch(error => {
+            console.log('failed to update golf bag');
             apiResponse.status(500).send(error.message);
         })
 

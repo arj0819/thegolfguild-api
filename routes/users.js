@@ -32,6 +32,12 @@ router.post('/:userId/round-holes/:roundHoleId/round-strokes/:roundStrokeId', ch
 //Delete Stroke from Round Hole By User
 router.delete('/:userId/round-holes/:roundHoleId/round-strokes/:roundStrokeId', checkAuth, UserController.users_delete_roundStroke);
 
+//Get Golf Bag By User
+router.get('/:userId/golf-bag', checkAuth, UserController.users_findOne_golfBag);
+
+//Update Golf Bag By User
+router.post('/:userId/golf-bag', checkAuth, UserController.users_update_golfBag);
+
 //End Round By User
 router.post('/:userId/rounds/:roundId/end', checkAuth, UserController.users_rounds_end);
 

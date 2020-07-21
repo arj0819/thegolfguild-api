@@ -22,56 +22,35 @@ const RoundStroke = db.define('RoundStroke', {
     terrainStartTypeId: {
         type: Sequelize.SMALLINT
     },
-    terrainIntendedTypeId: {
-        type: Sequelize.SMALLINT
-    },
     terrainResultTypeId: {
         type: Sequelize.SMALLINT
     },
-    curveIntendedTypeId: {
+    shapeAchievedTypeId: {
         type: Sequelize.SMALLINT
     },
-    curveResultTypeId: {
+    intendedShapeTypeId: {
         type: Sequelize.SMALLINT
     },
-    distanceResultTypeId: {
+    accuracyTypeId: {
         type: Sequelize.SMALLINT
     },
-    lateralResultTypeId: {
+    breakReadQualityTypeId: {
         type: Sequelize.SMALLINT
     },
-    lieAngleTypeId: {
+    contactQualityTypeId: {
         type: Sequelize.SMALLINT
     },
-    liePitchTypeId: {
+    lieQualityTypeId: {
         type: Sequelize.SMALLINT
     },
-    lieConditionTypeId: {
+    windTypeId: {
         type: Sequelize.SMALLINT
     },
-    breakLateralReadTypeId: {
-        type: Sequelize.SMALLINT
-    },
-    breakLateralResultTypeId: {
-        type: Sequelize.SMALLINT
-    },
-    breakVerticalReadTypeId: {
-        type: Sequelize.SMALLINT
-    },
-    breakVerticalResultTypeId: {
-        type: Sequelize.SMALLINT
-    },
-    windDirectionTypeId: {
-        type: Sequelize.SMALLINT
-    },
-    windStrengthTypeId: {
-        type: Sequelize.SMALLINT
-    },
-    strokeSatisfactionTypeId: {
+    satisfactionTypeId: {
         type: Sequelize.SMALLINT
     },
     clubId: {
-        type: Sequelize.DataTypes.UUID
+        type: Sequelize.SMALLINT
     },
 })
 

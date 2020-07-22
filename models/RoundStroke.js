@@ -25,10 +25,10 @@ const RoundStroke = db.define('RoundStroke', {
     terrainResultTypeId: {
         type: Sequelize.SMALLINT
     },
-    shapeAchievedTypeId: {
+    shapeIntendedTypeId: {
         type: Sequelize.SMALLINT
     },
-    intendedShapeTypeId: {
+    exhibitedShapeTypeId: {
         type: Sequelize.SMALLINT
     },
     accuracyTypeId: {

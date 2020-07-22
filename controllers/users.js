@@ -1,6 +1,16 @@
 const Sequelize = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const AccuracyTypes = require('../utils/AccuracyTypes');
+const BreakReadQualityTypes = require('../utils/BreakReadQualityTypes');
+const ContactQualityTypes = require('../utils/ContactQualityTypes');
+const ExhibitedShapeTypes = require('../utils/ExhibitedShapeTypes');
+const LieQualityTypes = require('../utils/LieQualityTypes');
+const SatisfactionTypes = require('../utils/SatisfactionTypes');
+const StrokeTypes = require('../utils/StrokeTypes');
+const TerrainTypes = require('../utils/TerrainTypes');
+const WindTypes = require('../utils/WindTypes');
+const YesNoTypes = require('../utils/YesNoTypes');
 const User = require('../models/User');
 const Round = require('../models/Round');
 const RoundHole = require('../models/RoundHole');
@@ -198,26 +208,46 @@ exports.users_findAll_active_rounds = (apiRequest, apiResponse) => {
     })
         .then(rounds => {
             var jsonRounds = [];
+            // for (var r = 0; r < rounds.length; r++) {
+            //     var totalStrokes = 0;
+            //     var totalParPlayed = 0;
+            //     var thruRoundHoleNumber = 0;
+            //     for (var i = 0; i < rounds[r].RoundHoles.length; i++) {
+            //         var currentRoundHole = rounds[r].RoundHoles[i];
+            //         var nextRoundHole = rounds[r].RoundHoles[i + 1] || null;
+            //         if (currentRoundHole.RoundStrokes.length > 0 && (nextRoundHole == null || nextRoundHole.RoundStrokes.length > 0)) {
+            //             totalParPlayed += currentRoundHole.par;
+            //             thruRoundHoleNumber = currentRoundHole.number;
+            //             for (var j = 0; j < currentRoundHole.RoundStrokes.length; j++) {
+            //                 totalStrokes += 1
+            //             }
+            //         } else {
+            //             break
+            //         }
+            //     }
+            //     var jsonRound = rounds[r].toJSON();
+            //     jsonRound.scoreRelativeToPar = totalStrokes - totalParPlayed;
+            //     jsonRound.thruHole = thruRoundHoleNumber
+            //     jsonRounds.push(jsonRound);
+            // }
+
             for (var r = 0; r < rounds.length; r++) {
                 var totalStrokes = 0;
                 var totalParPlayed = 0;
-                var thruRoundHoleNumber = 0;
+                var holesPlayed = 0;
                 for (var i = 0; i < rounds[r].RoundHoles.length; i++) {
                     var currentRoundHole = rounds[r].RoundHoles[i];
-                    var nextRoundHole = rounds[r].RoundHoles[i + 1] || null;
-                    if (currentRoundHole.RoundStrokes.length > 0 && (nextRoundHole == null || nextRoundHole.RoundStrokes.length > 0)) {
-                        totalParPlayed += currentRoundHole.par;
-                        thruRoundHoleNumber = currentRoundHole.number;
-                        for (var j = 0; j < currentRoundHole.RoundStrokes.length; j++) {
-                            totalStrokes += 1
+                    if (currentRoundHole.RoundStrokes.length > 0) {
+                        if (currentRoundHole.RoundStrokes[currentRoundHole.RoundStrokes.length - 1].terrainResultTypeId === 8) {
+                            totalParPlayed += currentRoundHole.par;
+                            holesPlayed ++;
+                            totalStrokes += currentRoundHole.RoundStrokes.length;
                         }
-                    } else {
-                        break
                     }
                 }
                 var jsonRound = rounds[r].toJSON();
                 jsonRound.scoreRelativeToPar = totalStrokes - totalParPlayed;
-                jsonRound.thruHole = thruRoundHoleNumber
+                jsonRound.thruHole = holesPlayed;
                 jsonRounds.push(jsonRound);
             }
 
@@ -362,7 +392,7 @@ exports.users_create_roundStroke = async (apiRequest, apiResponse) => {
 
     let previousStrokeTerrainResultType = null;
     let lieQualityTypeId = null;
-    let intendedShapeTypeId = null;
+    let exhibitedShapeTypeId = null;
     let breakReadQualityTypeId = null;
     if (roundHole.RoundStrokes.length > 0) {
         if (roundHole.RoundStrokes[roundHole.RoundStrokes.length - 1] !== null) {
@@ -370,22 +400,22 @@ exports.users_create_roundStroke = async (apiRequest, apiResponse) => {
         }
     } else {
         // Default lie quality of Good (2) if we know we are on the teebox
-        lieQualityTypeId = 2;
+        lieQualityTypeId = LieQualityTypes.GOOD.ID;
     }
 
     // Ignore the add new RoundStroke request if the previous stroke terrain type result was in the Hole (ID=8)
-    if (previousStrokeTerrainResultType === 8) {
+    if (previousStrokeTerrainResultType === TerrainTypes.HOLE.ID) {
         apiResponse.status(405).send();
         return;
     }
     // Default lie quality of Good (2) if the previousTerrainResultType was on the Green (6)
     // Default break read quality of Good (2) if the previousTerrainResultType was on the Green (6)
     // Default intended shape of Straight (2) if the previousTerrainResultType was NOT on the Green (6)
-    if (previousStrokeTerrainResultType === 6) {
-        lieQualityTypeId = 2;
-        breakReadQualityTypeId = 2;
+    if (previousStrokeTerrainResultType === TerrainTypes.GREEN.ID) {
+        lieQualityTypeId = LieQualityTypes.GOOD.ID;
+        breakReadQualityTypeId = BreakReadQualityTypes.GOOD.ID;
     } else {
-        intendedShapeTypeId = 2;
+        exhibitedShapeTypeId = ExhibitedShapeTypes.STRAIGHT.ID;
     }
 
     //create a new RoundStroke with the provided roundHoleId, userId
@@ -393,12 +423,12 @@ exports.users_create_roundStroke = async (apiRequest, apiResponse) => {
         roundHoleId: apiRequest.params.roundHoleId,
         userId: apiRequest.params.userId || null,
         number: roundHole.RoundStrokes.length + 1,
-        strokeTypeId: roundHole.RoundStrokes.length === 0 ? 2 : null,
-        terrainStartTypeId: roundHole.RoundStrokes.length === 0 ? 14 : previousStrokeTerrainResultType,
+        strokeTypeId: roundHole.RoundStrokes.length === 0 ? StrokeTypes.FULL.ID : null,
+        terrainStartTypeId: roundHole.RoundStrokes.length === 0 ? TerrainTypes.TEEBOX.ID : previousStrokeTerrainResultType,
         lieQualityTypeId: lieQualityTypeId,
-        intendedShapeTypeId: intendedShapeTypeId,
+        exhibitedShapeTypeId: exhibitedShapeTypeId,
         breakReadQualityTypeId: breakReadQualityTypeId,
-        satisfactionTypeId: 3,
+        satisfactionTypeId: SatisfactionTypes.GOOD.ID,
     })
         .then(roundStroke => {
             console.log(roundStroke);
@@ -429,8 +459,8 @@ exports.users_update_roundStroke = async (apiRequest, apiResponse) => {
         strokeTypeId: apiRequest.body.strokeTypeId !== typeof undefined ? apiRequest.body.strokeTypeId : roundStroke.strokeTypeId,
         terrainStartTypeId: apiRequest.body.terrainStartTypeId !== typeof undefined ? apiRequest.body.terrainStartTypeId : roundStroke.terrainStartTypeId,
         terrainResultTypeId: apiRequest.body.terrainResultTypeId !== typeof undefined ? apiRequest.body.terrainResultTypeId : roundStroke.terrainResultTypeId,
-        shapeAchievedTypeId: apiRequest.body.shapeAchievedTypeId !== typeof undefined ? apiRequest.body.shapeAchievedTypeId : roundStroke.shapeAchievedTypeId,
-        intendedShapeTypeId: apiRequest.body.intendedShapeTypeId !== typeof undefined ? apiRequest.body.intendedShapeTypeId : roundStroke.intendedShapeTypeId,
+        shapeIntendedTypeId: apiRequest.body.shapeIntendedTypeId !== typeof undefined ? apiRequest.body.shapeIntendedTypeId : roundStroke.shapeIntendedTypeId,
+        exhibitedShapeTypeId: apiRequest.body.exhibitedShapeTypeId !== typeof undefined ? apiRequest.body.exhibitedShapeTypeId : roundStroke.exhibitedShapeTypeId,
         accuracyTypeId: apiRequest.body.accuracyTypeId !== typeof undefined ? apiRequest.body.accuracyTypeId : roundStroke.accuracyTypeId,
         lieQualityTypeId: apiRequest.body.lieQualityTypeId !== typeof undefined ? apiRequest.body.lieQualityTypeId : roundStroke.lieQualityTypeId,
         contactQualityTypeId: apiRequest.body.contactQualityTypeId !== typeof undefined ? apiRequest.body.contactQualityTypeId : roundStroke.contactQualityTypeId,

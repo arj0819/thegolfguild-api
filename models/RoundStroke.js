@@ -28,6 +28,9 @@ const RoundStroke = db.define('RoundStroke', {
     shapeIntendedTypeId: {
         type: Sequelize.SMALLINT
     },
+    intendedShapeTypeId: {
+        type: Sequelize.SMALLINT
+    },
     exhibitedShapeTypeId: {
         type: Sequelize.SMALLINT
     },
@@ -50,6 +53,9 @@ const RoundStroke = db.define('RoundStroke', {
         type: Sequelize.SMALLINT
     },
     clubId: {
+        type: Sequelize.SMALLINT
+    },
+    leaveQualityTypeId: {
         type: Sequelize.SMALLINT
     },
 })

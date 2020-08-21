@@ -38,6 +38,12 @@ router.get('/:userId/golf-bag', checkAuth, UserController.users_findOne_golfBag)
 //Update Golf Bag By User
 router.post('/:userId/golf-bag', checkAuth, UserController.users_update_golfBag);
 
+//Get Tracked Metrics By User
+router.get('/:userId/tracked-metrics', checkAuth, UserController.users_findOne_trackedMetrics);
+
+//Update Tracked Metrics By User
+router.post('/:userId/tracked-metrics', checkAuth, UserController.users_update_trackedMetrics);
+
 //End Round By User
 router.post('/:userId/rounds/:roundId/end', checkAuth, UserController.users_rounds_end);
 

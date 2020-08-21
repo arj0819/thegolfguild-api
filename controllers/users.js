@@ -58,13 +58,14 @@ exports.users_signup = async (apiRequest, apiResponse) => {
             if (error) {
                 apiRequest.status(500).send(error.message)
             } else {
-                //create a new User with provided email, firstName, lastName, and hashed password
+                //create a new User with provided email, firstName, lastName, hashed password, a default golf bag, default tracked metrics, and a confirmed flag
                 const user = await User.create({
                     email: apiRequest.body.email,
                     password: hash,
                     firstName: apiRequest.body.firstName,
                     lastName: apiRequest.body.lastName,
                     golfBag: [39],
+                    trackedMetrics: {},
                     confirmed: false,
                 })
                     .then(user => {
@@ -205,7 +206,10 @@ exports.users_findAll_active_rounds = (apiRequest, apiResponse) => {
         where: {
             userId: apiRequest.params.userId,
             isActive: true
-        }
+        },
+        order: [
+            ['createdAt', 'DESC']
+        ],
     })
         .then(rounds => {
             var jsonRounds = [];
@@ -249,6 +253,8 @@ exports.users_findAll_active_rounds = (apiRequest, apiResponse) => {
                 var jsonRound = rounds[r].toJSON();
                 jsonRound.scoreRelativeToPar = totalStrokes - totalParPlayed;
                 jsonRound.thruHole = holesPlayed;
+                jsonRound.timer = null; //solely for Vue reactivity to work with the Round Timers
+                jsonRound.behindPace = null; //solely for Vue reactivity to work with the Round Timers
                 jsonRounds.push(jsonRound);
             }
 
@@ -508,8 +514,6 @@ exports.users_findOne_golfBag = async (apiRequest, apiResponse) => {
         },
     })
         .then(user => {
-            console.log(user.golfBag);
-            jwt.verify
             apiResponse.status(200).json(user.golfBag);
         })
         .catch(error => {
@@ -539,12 +543,60 @@ exports.users_update_golfBag = async (apiRequest, apiResponse) => {
             userId: user.userId
         }
     })
-        .then(roundStroke => {
+        .then(golfBag => {
             console.log('golf bag updated sucessfully');
-            apiResponse.status(200).send(roundStroke);
+            apiResponse.status(200).send(golfBag);
         })
         .catch(error => {
             console.log('failed to update golf bag');
+            apiResponse.status(500).send(error.message);
+        })
+
+}
+
+exports.users_findOne_trackedMetrics = async (apiRequest, apiResponse) => {
+
+    const user = await User.findOne({
+        where: {
+            userId: apiRequest.params.userId
+        },
+    })
+        .then(user => {
+            apiResponse.status(200).json(user.trackedMetrics);
+        })
+        .catch(error => {
+            console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+}
+
+exports.users_update_trackedMetrics = async (apiRequest, apiResponse) => {
+    
+    const user = await User.findOne({
+        where: {
+            userId: apiRequest.params.userId
+        },
+    })
+        .catch(error => {
+            console.log(error);
+            apiResponse.status(500).send(error.message);
+        })
+
+    //update the User's trackedMetrics with the provided trackedMetrics
+    User.update({
+        trackedMetrics: apiRequest.body.trackedMetrics
+    },{
+        where: {
+            userId: user.userId
+        }
+    })
+        .then(trackedMetrics => {
+            console.log('tracked metrics updated sucessfully');
+            apiResponse.status(200).send(trackedMetrics);
+        })
+        .catch(error => {
+            console.log('failed to update tracked metrics');
             apiResponse.status(500).send(error.message);
         })
 

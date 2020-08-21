@@ -24,6 +24,9 @@ const User = db.define('User', {
     },
     golfBag: {
         type: Sequelize.ARRAY(Sequelize.DataTypes.SMALLINT)
+    },
+    trackedMetrics: {
+        type: Sequelize.JSON
     }
 })
 
